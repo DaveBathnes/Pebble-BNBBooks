@@ -1,10 +1,12 @@
 /**
+ * Libraries : Hacked
  * BNB Books Published example App
  * App to query the British National Bibliography for books published in the current location.
  */
 
 var UI = require('ui');
 var Vector2 = require('vector2');
+var ajax = require('ajax');
 
 var main = new UI.Card({
   title: 'BNB Books',
@@ -35,11 +37,12 @@ function getLocalBook(){
 //////////////////////////////////////
 // locationSuccess()
 // Input: position (as returned by a geocode lookup)
-// On success of the location lookup, call to the the book.
+// On success of the location lookup, reverse geocode
+// the coords.
 //////////////////////////////////////
 function locationSuccess(pos) {
   var coordinates = pos.coords;
-  getBook(coordinates.latitude, coordinates.longitude);
+  reverseGeocode(coordinates.latitude, coordinates.longitude);
 }
 
 //////////////////////////////////////
@@ -51,31 +54,49 @@ function locationError(err) {
   console.warn('location error (' + err.code + '): ' + err.message);
 }
 
+
+//////////////////////////////////////
+// reverseGeocode(lat, lng)
+// Input: lat and lng coordinates
+//
+//////////////////////////////////////
+function reverseGeocode(lat, lng) {
+  ajax(
+    {
+      url: 'http://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=' + lat + '&lon=' + lng,
+      type: 'json'
+    },
+    function(data, status, request) {
+      getBook(data);
+    },
+    function(error, status, request) {
+      console.log('The ajax request failed: ' + error);
+    }
+  );
+}
+
 //////////////////////////////////////
 // getBook(latitude, longitude)
 // Input:
 // Output: 
 //////////////////////////////////////
-function getBook(latitude, longitude) {
+function getBook(address) {
   
-  var req = new XMLHttpRequest();
-  
-  req.open('GET', "http://api.openweathermap.org/data/2.5/weather?" + "lat=" + latitude + "&lon=" + longitude + "&cnt=1", true);
-  
-  req.onload = function(e) {
-    if (req.readyState == 4) {
-      if(req.status == 200) {
-        console.log(req.responseText);
+  // the address object may have village, town, or city
+  // for now just use city
 
-        displayBook(req);
-        
-      } else {
-        console.log("Error");
-      }
+  ajax(
+    {
+      url: 'http://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=' + latitude + '&lon=' + longitude,
+      type: 'json'
+    },
+    function(data, status, request) {
+      console.log('Quote of the day is: ' + data.contents.quote);
+    },
+    function(error, status, request) {
+      console.log('The ajax request failed: ' + error);
     }
-  };
-  
-  req.send(null);
+  );
 }
 
 //////////////////////////////////////
