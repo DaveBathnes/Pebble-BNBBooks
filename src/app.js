@@ -14,19 +14,19 @@ var main = new UI.Card({
 });
 
 // The location options that are passed in when accessing location
-// 15 second timeout an d maximum 'age' of 60 seconds. 
+// 15 second timeout and a maximum 'age' of the data set at 60 seconds. 
 var locationOptions = { "timeout": 15000, "maximumAge": 60000 }; 
 
 main.show();
 
+// set up any of the buttons to trigger the fetch.
 main.on('click', 'up', function(e) { getLocalBook(); });
 main.on('click', 'select', function(e) { getLocalBook(); });
 main.on('click', 'down', function(e) { getLocalBook(); });
 
 //////////////////////////////////////
 // getLocalBook()
-// Input:
-// Output: 
+// Triggers the location lookup
 //////////////////////////////////////
 function getLocalBook(){
   main.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
@@ -34,8 +34,8 @@ function getLocalBook(){
 
 //////////////////////////////////////
 // locationSuccess()
-// Input:
-// Output: 
+// Input: position (as returned by a geocode lookup)
+// On success of the location lookup, call to the the book.
 //////////////////////////////////////
 function locationSuccess(pos) {
   var coordinates = pos.coords;
