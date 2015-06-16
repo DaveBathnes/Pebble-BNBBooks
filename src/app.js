@@ -13,7 +13,7 @@ var UI = require('ui');
 var Vector2 = require('vector2');
 var ajax = require('ajax');
 // For use when simulating locations
-var hasfield = { latitude: 51.94, longitude: -2.26 }
+var hasfield = { latitude: 51.94, longitude: -2.26 };
 
 var main = new UI.Card({
   title: 'BNB Books',
@@ -237,7 +237,7 @@ function displayLibrary(libraryObject){
   });
 
   var textfield = new UI.Text({
-    position: new Vector2(0, 65),
+    position: new Vector2(0, 0),
     size: new Vector2(144, 30),
     font: 'gothic-24-bold',
     text: libraryObject['dc.title'],
