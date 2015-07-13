@@ -1,6 +1,6 @@
 /**
  * Libraries : Hacked
- * BNB Books Published example App
+ * BNB Books example App
  * App to query the British National Bibliography for books published in the current location.
  * And to find the nearest library.
  */
@@ -9,13 +9,13 @@
 // APP STARTUP
 //////////////////////////////////////////////////////////////
 
-var UI = require('ui');
-var Vector2 = require('vector2');
+var ui = require('ui');
 var ajax = require('ajax');
 // For use when simulating locations
 var hasfield = { latitude: 51.94, longitude: -2.26 };
 
-var main = new UI.Card({
+// The main UI card - values can then be dynamically changed
+var main = new ui.Card({
   title: 'BNB Books',
   icon: 'images/menu_icon.png',
   subtitle: '',
@@ -90,23 +90,11 @@ function getBookPublished(address) {
   // construct a sparql query to get a book from a location
   var sparql = '';
   sparql += 'PREFIX bibo: <http://purl.org/ontology/bibo/>';
-  sparql += 'PREFIX bio: <http://purl.org/vocab/bio/0.1/>';
   sparql += 'PREFIX blt: <http://www.bl.uk/schemas/bibliographic/blterms#>';
   sparql += 'PREFIX dct: <http://purl.org/dc/terms/>';
   sparql += 'PREFIX event: <http://purl.org/NET/c4dm/event.owl#>';
-  sparql += 'PREFIX foaf: <http://xmlns.com/foaf/0.1/>';
-  sparql += 'PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>';
-  sparql += 'PREFIX isbd: <http://iflastandards.info/ns/isbd/elements/>';
-  sparql += 'PREFIX org: <http://www.w3.org/ns/org#>';
-  sparql += 'PREFIX owl: <http://www.w3.org/2002/07/owl#>';
-  sparql += 'PREFIX rdau: <http://rdaregistry.info/Elements/u/>';
-  sparql += 'PREFIX madsrdf: <http://www.loc.gov/mads/rdf/v1#>';
-  sparql += 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>';
   sparql += 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>';
-  sparql += 'PREFIX skos: <http://www.w3.org/2004/02/skos/core#>';
-  sparql += 'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>';
-  sparql += 'PREFIX void: <http://rdfs.org/ns/void#>';
-  sparql += 'SELECT ?book ?isbn ?title WHERE {';
+  sparql += 'SELECT ?book ?title ?isbn ?timeLabel ?creator ?name WHERE {';
   sparql += '  ?place rdfs:label "' + city + '" .';
   sparql += '  ?publication event:place ?place.';
   sparql += '  ?book';
@@ -119,7 +107,6 @@ function getBookPublished(address) {
   queryBNB(sparql); 
 }
 
-
 //////////////////////////////////////
 // getBookSetIn(address)
 // Input: address from reverse geocoding
@@ -128,37 +115,36 @@ function getBookSetIn(address) {
   // the address object may have village, town, or city
   // for now just use city
   console.log(JSON.stringify(address));
-  var city = address.town;
+  var place = address.town;
+  
+  // the place name tends to be something like Hasfield (England)
+  place += '(' + address.country + ')';
   
   // construct a sparql query to get a book from a location
   var sparql = '';
-  sparql += 'PREFIX bibo: <http://purl.org/ontology/bibo/>';
-  sparql += 'PREFIX bio: <http://purl.org/vocab/bio/0.1/>';
+  sparql += 'PPREFIX bibo: <http://purl.org/ontology/bibo/>';
   sparql += 'PREFIX blt: <http://www.bl.uk/schemas/bibliographic/blterms#>';
   sparql += 'PREFIX dct: <http://purl.org/dc/terms/>';
   sparql += 'PREFIX event: <http://purl.org/NET/c4dm/event.owl#>';
   sparql += 'PREFIX foaf: <http://xmlns.com/foaf/0.1/>';
-  sparql += 'PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>';
-  sparql += 'PREFIX isbd: <http://iflastandards.info/ns/isbd/elements/>';
-  sparql += 'PREFIX org: <http://www.w3.org/ns/org#>';
-  sparql += 'PREFIX owl: <http://www.w3.org/2002/07/owl#>';
-  sparql += 'PREFIX rdau: <http://rdaregistry.info/Elements/u/>';
-  sparql += 'PREFIX madsrdf: <http://www.loc.gov/mads/rdf/v1#>';
   sparql += 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>';
   sparql += 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>';
-  sparql += 'PREFIX skos: <http://www.w3.org/2004/02/skos/core#>';
-  sparql += 'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>';
-  sparql += 'PREFIX void: <http://rdfs.org/ns/void#>';
-  sparql += 'SELECT ?book ?isbn ?title WHERE {';
-  sparql += '  ?place rdfs:label "' + city + '" .';
-  sparql += '  ?publication event:place ?place.';
-  sparql += '  ?book';
-  sparql += '    blt:publication ?publication;';
-  sparql += '    bibo:isbn10 ?isbn;';
-  sparql += '  dct:title ?title.';
+  sparql += 'PREFIX c4dm: <http://purl.org/NET/c4dm/event.owl#>';
+  sparql += 'SELECT DISTINCT ?bnb ?book ?title ?isbn ?timeLabel ?creator ?name WHERE {';
+  sparql += '   ?setIn rdfs:label ' + place + '.';
+  sparql += '   ?publication event:place ?place;';
+  sparql += '      c4dm:time ?time.';
+  sparql += '   ?book';
+  sparql += '      a bibo:Book;';
+  sparql += '      blt:bnb ?bnb;';
+  sparql += '      blt:publication ?publication;';
+  sparql += '      bibo:isbn10 ?isbn;';
+  sparql += '      dct:title ?title;';
+  sparql += '      dct:creator ?creator;';
+  sparql += '      dct:spatial ?setIn.';
+  sparql += '   ?creator foaf:name ?name.';
   sparql += '}';
-  sparql += 'LIMIT 1';
-
+  
   queryBNB(sparql); 
 }
 
@@ -204,24 +190,12 @@ function getLibrary(pos) {
 
 //////////////////////////////////////
 // displayBook(bookObject)
-// Input:
+// Input: bookObject returned from BNB
 //////////////////////////////////////
 function displayBook(bookObject){
-
-  var book = new UI.Window({
-    fullscreen: true,
-  });
-
-  var textfield = new UI.Text({
-    position: new Vector2(0, 65),
-    size: new Vector2(144, 30),
-    font: 'gothic-24-bold',
-    text: 'Text Anywhere!',
-    textAlign: 'center'
-  });
-
-  book.add(textfield);
-  book.show();
+  main.title(bookObject.title);
+  main.subtitle('');
+  main.body('body');
 }
 
 //////////////////////////////////////
@@ -231,21 +205,9 @@ function displayBook(bookObject){
 // Displays onto the pebble screen
 //////////////////////////////////////
 function displayLibrary(libraryObject){
-
-  var library = new UI.Window({
-    fullscreen: true,
-  });
-
-  var textfield = new UI.Text({
-    position: new Vector2(0, 0),
-    size: new Vector2(144, 30),
-    font: 'gothic-24-bold',
-    text: libraryObject['dc.title'],
-    textAlign: 'center'
-  });
-
-  library.add(textfield);
-  library.show();
+  main.title('Library');
+  main.subtitle('');
+  main.body(libraryObject['dc.titleString']);
 }
 
 //////////////////////////////////////
