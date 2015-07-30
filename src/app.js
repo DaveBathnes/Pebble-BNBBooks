@@ -115,7 +115,7 @@ function getBookSetIn(address) {
       'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>' + 
       'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>' + 
       'PREFIX c4dm: <http://purl.org/NET/c4dm/event.owl#>' + 
-      'SELECT ?bnb ?book ?title ?isbn ?creator ?name WHERE {' + 
+      'SELECT ?book ?title ?isbn ?creator WHERE {' + 
       '   ?setIn rdfs:label "' + city + '" .' + 
       '   ?publication event:place ?place;' + 
       '      c4dm:time ?time.' + 
@@ -143,7 +143,14 @@ function queryBNB(sparql) {
   ajax( { url: url, type: 'json' },
        function(data, status, request) {
          console.log(JSON.stringify(data));
-         if (data.results.bindings[0]) displayItem(data.results.bindings[0].title.value, data.results.bindings[0].isbn.value, data.results.bindings[0].name.value);
+         var title = '';
+         var subtitle = '';
+         var description = '';
+         if (data.results.bindings[0] && data.results.bindings[0].title) title = data.results.bindings[0].title.value;
+         if (data.results.bindings[0] && data.results.bindings[0].isbn) subtitle = data.results.bindings[0].isbn.value;
+         if (data.results.bindings[0] && data.results.bindings[0].name) description = data.results.bindings[0].name.value;
+         
+         displayItem(title, subtitle, description);
        }, 
        handleError);
 }
@@ -170,7 +177,7 @@ function getLibrary(pos) {
   ajax( { url: url, type: 'json' },
        function(data, status, request) {
          console.log(JSON.stringify(data));
-         if (data.response.docs[0]) displayItem(data.response.docs[0]['dc.titleString'], '', '');
+         if (data.response.docs[0]) displayItem('Library', '', data.response.docs[0]['dc.titleString']);
        },
        handleError
   );
