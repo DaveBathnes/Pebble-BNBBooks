@@ -1,12 +1,12 @@
-# BNB books Pebble app
+# British National Bibliography Pebble app
 
 A Pebble watchapp for finding books published in your current location, taken from the British National Bibliography.
 
 ## Getting Started
 
-Pebble were taken over by Fitbit and the development environment is not being maintained as far as I know.
+A [pebble app development blog](https://medium.com/@sejoker/pebble-app-development-with-pebble-js-ab9af8c8ce50) gives an indication of the different development options for Pebble.
 
-A blog here gives an indication of the different development options for Pebble: https://medium.com/@sejoker/pebble-app-development-with-pebble-js-ab9af8c8ce50
+Pebble were taken over by Fitbit and the development environment is no longer being maintained.
 
 ### Prerequisites
 
